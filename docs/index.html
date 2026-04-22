@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>纵穿胡焕庸线 · 2025</title>
+  <title>纵穿胡线 · 2025</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -555,7 +555,7 @@
     <span class="live-zh">实时追踪</span>
   </div>
 
-  <div class="main-title">纵穿胡焕庸线</div>
+  <div class="main-title">纵穿胡线</div>
   <div class="main-en">Riding the Line that Makes China China</div>
 
   <div class="route-row">
@@ -707,8 +707,8 @@ const HEIHE     = [50.2458, 127.4831];
 /* ── MAP ─────────────────────────────────────────── */
 const map = L.map('map', { center:[37,108], zoom:4, zoomControl:true, attributionControl:false });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  maxZoom:19, subdomains:'abcd'
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19
 }).addTo(map);
 
 L.control.attribution({ prefix: false })
