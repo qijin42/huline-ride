@@ -2,562 +2,107 @@
 
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>纵穿胡线 · 2025</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg:      #0a0c10;
-      --panel:   #0f1117;
-      --card:    #141720;
-      --border:  rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
-      --text:    #ffffff;
-      --sub:     rgba(255,255,255,0.45);
-      --dim:     rgba(255,255,255,0.2);
-      --accent:  #e84c2b;
-      --green:   #22c55e;
-      --amber:   #f59e0b;
-      --blue:    #3b82f6;
-      --zh:      'Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
-      --en:      'Whitney','Trebuchet MS','Gill Sans MT',sans-serif;
-      --mono:    'SF Mono','Fira Mono','Consolas',monospace;
-    }
-
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--zh);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ═══════════════════════════════════════════
-       HERO HEADER
-    ═══════════════════════════════════════════ */
-    .hero {
-      padding: 32px 36px 24px;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Subtle grid texture */
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-
-    .live-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--green);
-      margin-bottom: 16px;
-    }
-
-    .live-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 1.8s ease infinite;
-    }
-
-    @keyframes pulse {
-      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
-      50%      { opacity:.6; box-shadow: 0 0 0 5px rgba(34,197,94,0); }
-    }
-
-    .live-sep {
-      color: var(--dim);
-      margin: 0 4px;
-    }
-
-    .live-zh {
-      font-family: var(--zh);
-      font-size: 10px;
-      color: var(--sub);
-      letter-spacing: .05em;
-    }
-
-    .main-title {
-      font-family: var(--zh);
-      font-size: clamp(36px, 6vw, 72px);
-      font-weight: 900;
-      letter-spacing: .02em;
-      line-height: 1;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-
-    .main-en {
-      font-family: var(--en);
-      font-size: clamp(13px, 2vw, 18px);
-      font-weight: 400;
-      font-style: italic;
-      color: rgba(255,255,255,.35);
-      letter-spacing: .01em;
-      margin-bottom: 18px;
-    }
-
-    .route-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .route-chip {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--sub);
-      letter-spacing: .04em;
-    }
-
-    .route-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: var(--dim);
-    }
-
-    /* ═══════════════════════════════════════════
-       STATS GRID
-    ═══════════════════════════════════════════ */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-bottom: 1px solid var(--border);
-    }
-
-    @media (max-width: 760px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    .stat {
-      padding: 20px 24px;
-      border-right: 1px solid var(--border);
-      position: relative;
-    }
-
-    .stat:last-child { border-right: none; }
-
-    /* Bottom progress line */
-    .stat::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0;
-      height: 2px;
-      width: var(--p, 0%);
-      transition: width 1.6s cubic-bezier(.4,0,.2,1);
-    }
-
-    .stat.red::after   { background: var(--accent); }
-    .stat.amber::after { background: var(--amber); }
-    .stat.green::after { background: var(--green); }
-    .stat.blue::after  { background: var(--blue); }
-
-    .stat-head {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .stat-label-zh {
-      font-family: var(--zh);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--sub);
-    }
-
-    .stat-label-en {
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--dim);
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-
-    .stat-number {
-      font-family: var(--en);
-      font-size: clamp(28px, 3.5vw, 42px);
-      font-weight: 700;
-      color: #fff;
-      line-height: 1;
-      letter-spacing: -.02em;
-    }
-
-    .stat-unit {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--sub);
-      margin-left: 3px;
-    }
-
-    .stat-foot {
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .stat-of {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--dim);
-    }
-
-    .stat-pct {
-      font-family: var(--mono);
-      font-size: 10px;
-      margin-left: auto;
-    }
-
-    .stat.red   .stat-pct { color: var(--accent); }
-    .stat.amber .stat-pct { color: var(--amber); }
-    .stat.green .stat-pct { color: var(--green); }
-    .stat.blue  .stat-pct { color: var(--blue); }
-
-    /* ═══════════════════════════════════════════
-       DUAL PROGRESS BARS (dist + elev)
-    ═══════════════════════════════════════════ */
-    .progress-bars {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--panel);
-    }
-
-    .pbar-row {
-      display: grid;
-      grid-template-columns: 80px 1fr 60px;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .pbar-label {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-    }
-
-    .pbar-zh {
-      font-family: var(--zh);
-      font-size: 11px;
-      color: var(--sub);
-    }
-
-    .pbar-track {
-      height: 4px;
-      background: rgba(255,255,255,.08);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .pbar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 1.6s cubic-bezier(.4,0,.2,1);
-      width: 0%;
-    }
-
-    .pbar-fill.red   { background: var(--accent); }
-    .pbar-fill.amber { background: var(--amber); }
-
-    .pbar-pct {
-      font-family: var(--mono);
-      font-size: 10px;
-      text-align: right;
-    }
-
-    .pbar-pct.red   { color: var(--accent); }
-    .pbar-pct.amber { color: var(--amber); }
-
-    /* ═══════════════════════════════════════════
-       STATUS BAR
-    ═══════════════════════════════════════════ */
-    .status-bar {
-      padding: 9px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--panel);
-    }
-
-    .status-icon {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--amber);
-      flex-shrink: 0;
-    }
-
-    .status-text {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--sub);
-    }
-
-    .status-zh {
-      font-family: var(--zh);
-      font-size: 11px;
-      color: var(--dim);
-      margin-right: 2px;
-    }
-
-    .upload-toggle {
-      margin-left: auto;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--dim);
-      cursor: pointer;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      border: 1px solid var(--border2);
-      padding: 3px 8px;
-      transition: color .2s, border-color .2s;
-    }
-
-    .upload-toggle:hover { color: var(--sub); border-color: var(--dim); }
-
-    .upload-box {
-      display: none;
-      padding: 14px 24px;
-      background: #0d1018;
-      border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--sub);
-      line-height: 1.9;
-    }
-
-    .upload-box.show { display: block; }
-
-    .upload-box code {
-      background: rgba(255,255,255,.08);
-      padding: 1px 6px;
-      border-radius: 3px;
-      color: #fff;
-      font-size: 10.5px;
-    }
-
-    .upload-box .zh {
-      font-family: var(--zh);
-      color: var(--dim);
-      font-size: 11px;
-    }
-
-    /* ═══════════════════════════════════════════
-       MAP
-    ═══════════════════════════════════════════ */
-    .map-wrap {
-      position: relative;
-      height: calc(100vh - 380px);
-      min-height: 380px;
-    }
-
-    #map {
-      width: 100%; height: 100%;
-      background: #080b10;
-    }
-
-    .map-legend {
-      position: absolute;
-      bottom: 20px;
-      left: 16px;
-      z-index: 500;
-      background: rgba(10,12,16,.85);
-      border: 1px solid var(--border2);
-      backdrop-filter: blur(10px);
-      padding: 10px 14px;
-      display: flex;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-
-    .leg-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .leg-line {
-      width: 20px; height: 2px;
-    }
-
-    .leg-line.dashed {
-      border-top: 2px dashed rgba(255,255,255,.2);
-      height: 0; background: none;
-    }
-
-    .leg-line.red   { background: var(--accent); }
-    .leg-line.green { background: var(--green); }
-
-    .leg-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(10,12,16,.8);
-    }
-
-    .leg-dot.green { background: var(--green); }
-    .leg-dot.blue  { background: var(--blue); }
-    .leg-dot.amber { background: var(--amber); }
-
-    .leg-text {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      color: var(--sub);
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-
-    .leg-zh {
-      font-family: var(--zh);
-      font-size: 10px;
-      color: var(--dim);
-      margin-left: 2px;
-    }
-
-    /* ═══════════════════════════════════════════
-       FOOTER
-    ═══════════════════════════════════════════ */
-    .footer {
-      padding: 10px 24px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-      background: var(--panel);
-    }
-
-    .footer-left {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--dim);
-    }
-
-    .footer-right {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--dim);
-    }
-
-    /* ═══════════════════════════════════════════
-       LEAFLET OVERRIDES
-    ═══════════════════════════════════════════ */
-    .leaflet-popup-content-wrapper {
-      background: #12151c;
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 3px;
-      box-shadow: 0 12px 32px rgba(0,0,0,.7);
-      color: #fff;
-    }
-    .leaflet-popup-tip { background: #12151c; }
-    .leaflet-popup-content { margin: 11px 15px; }
-
-    .pop-tag {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--sub);
-      margin-bottom: 4px;
-    }
-
-    .pop-name .zh {
-      font-family: var(--zh);
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .pop-name .en {
-      font-family: var(--en);
-      font-size: 11px;
-      color: var(--sub);
-      margin-left: 5px;
-    }
-
-    .pop-stats {
-      margin-top: 6px;
-      display: flex;
-      gap: 12px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--sub);
-    }
-
-    .pop-stats b { color: #fff; font-weight: 500; }
-
-    /* City marker */
-    .cmark {
-      background: rgba(10,12,16,.9);
-      border: 1px solid rgba(255,255,255,.15);
-      padding: 4px 9px 4px 7px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-
-    .cmark-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-    }
-
-    .cmark-zh {
-      font-family: var(--zh);
-      font-size: 12px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .cmark-en {
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--sub);
-    }
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纵穿胡焕庸线 · 2025</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--panel:#0f1117;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--sub:rgba(255,255,255,0.45);--dim:rgba(255,255,255,0.2);--accent:#e84c2b;--green:#22c55e;--amber:#f59e0b;--blue:#3b82f6;--zh:'Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;--mono:'SF Mono','Fira Mono','Consolas',monospace;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:#fff;font-family:var(--zh);-webkit-font-smoothing:antialiased;}
+.hero{padding:32px 36px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.live-tag{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:16px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4);}50%{opacity:.6;box-shadow:0 0 0 5px rgba(34,197,94,0);}}
+.main-title{font-family:var(--zh);font-size:clamp(36px,6vw,72px);font-weight:900;letter-spacing:.02em;line-height:1;color:#fff;margin-bottom:6px;}
+.main-en{font-size:clamp(13px,2vw,18px);font-style:italic;color:rgba(255,255,255,.35);margin-bottom:18px;}
+.route-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.route-chip{font-family:var(--mono);font-size:11px;color:var(--sub);letter-spacing:.04em;}
+.route-dot{width:3px;height:3px;border-radius:50%;background:var(--dim);}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{padding:20px 24px;border-right:1px solid var(--border);position:relative;}
+.stat:last-child{border-right:none;}
+.stat::after{content:'';position:absolute;bottom:0;left:0;height:2px;width:var(--p,0%);transition:width 1.6s cubic-bezier(.4,0,.2,1);}
+.stat.red::after{background:var(--accent);}
+.stat.amber::after{background:var(--amber);}
+.stat.green::after{background:var(--green);}
+.stat.blue::after{background:var(--blue);}
+.stat-head{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;}
+.stat-label-zh{font-family:var(--zh);font-size:11px;font-weight:500;color:var(--sub);}
+.stat-label-en{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;}
+.stat-number{font-size:clamp(28px,3.5vw,42px);font-weight:700;color:#fff;line-height:1;letter-spacing:-.02em;}
+.stat-unit{font-family:var(--mono);font-size:12px;color:var(--sub);margin-left:3px;}
+.stat-foot{margin-top:6px;display:flex;align-items:center;gap:6px;}
+.stat-of{font-family:var(--mono);font-size:10px;color:var(--dim);}
+.stat-pct{font-family:var(--mono);font-size:10px;margin-left:auto;}
+.stat.red .stat-pct{color:var(--accent);}
+.stat.amber .stat-pct{color:var(--amber);}
+.stat.green .stat-pct{color:var(--green);}
+.stat.blue .stat-pct{color:var(--blue);}
+.pbars{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px;background:var(--panel);}
+.pbar-row{display:grid;grid-template-columns:80px 1fr 60px;align-items:center;gap:12px;}
+.pbar-zh{font-family:var(--zh);font-size:11px;color:var(--sub);}
+.pbar-en{font-family:var(--mono);font-size:9px;color:var(--dim);margin-left:4px;}
+.pbar-track{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:2px;transition:width 1.6s cubic-bezier(.4,0,.2,1);width:0%;}
+.pbar-fill.red{background:var(--accent);}
+.pbar-fill.amber{background:var(--amber);}
+.pbar-pct{font-family:var(--mono);font-size:10px;text-align:right;}
+.pbar-pct.red{color:var(--accent);}
+.pbar-pct.amber{color:var(--amber);}
+.sbar{padding:9px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--panel);}
+.sbar-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);}
+.sbar-text{font-family:var(--mono);font-size:11px;color:var(--sub);}
+.sbar-zh{font-family:var(--zh);font-size:11px;color:var(--dim);margin-right:2px;}
+.upload-btn{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);cursor:pointer;border:1px solid var(--border2);padding:3px 8px;}
+.upload-box{display:none;padding:14px 24px;background:#0d1018;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--sub);line-height:1.9;}
+.upload-box.show{display:block;}
+.upload-box code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:3px;color:#fff;}
+.upload-box .zh{font-family:var(--zh);color:var(--dim);}
+.map-wrap{position:relative;height:500px;}
+#map{width:100%;height:100%;}
+.legend{position:absolute;bottom:20px;left:16px;z-index:500;background:rgba(10,12,16,.85);border:1px solid var(--border2);padding:10px 14px;display:flex;gap:18px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;}
+.leg-line{width:20px;height:2px;}
+.leg-line.dashed{border-top:2px dashed rgba(255,255,255,.2);height:0;background:none;}
+.leg-line.green{background:var(--green);}
+.leg-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(10,12,16,.8);}
+.leg-dot.green{background:var(--green);}
+.leg-dot.blue{background:var(--blue);}
+.leg-dot.amber{background:var(--amber);}
+.leg-text{font-family:var(--mono);font-size:9.5px;color:var(--sub);letter-spacing:.04em;text-transform:uppercase;}
+.leg-zh{font-family:var(--zh);font-size:10px;color:var(--dim);margin-left:2px;}
+.footer{padding:10px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:var(--panel);}
+.footer span{font-family:var(--mono);font-size:10px;color:var(--dim);}
+.leaflet-popup-content-wrapper{background:#12151c;border:1px solid rgba(255,255,255,.1);border-radius:3px;box-shadow:0 12px 32px rgba(0,0,0,.7);color:#fff;}
+.leaflet-popup-tip{background:#12151c;}
+.leaflet-popup-content{margin:11px 15px;}
+.pop-tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:4px;}
+.pop-zh{font-family:var(--zh);font-size:14px;font-weight:600;color:#fff;}
+.pop-en{font-size:11px;color:var(--sub);margin-left:5px;}
+.pop-stats{margin-top:6px;display:flex;gap:12px;font-family:var(--mono);font-size:11px;color:var(--sub);}
+.pop-stats b{color:#fff;font-weight:500;}
+.cmark{background:rgba(10,12,16,.9);border:1px solid rgba(255,255,255,.15);padding:4px 9px 4px 7px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.cmark-dot{width:7px;height:7px;border-radius:50%;}
+.cmark-zh{font-family:var(--zh);font-size:12px;font-weight:600;color:#fff;}
+.cmark-en{font-family:var(--mono);font-size:9px;color:var(--sub);}
+</style>
 </head>
 <body>
-
-<!-- ═══ HERO ═══════════════════════════════════════════════════ -->
 
 <div class="hero">
   <div class="live-tag">
     <span class="live-dot"></span>
     LIVE TRACKING
-    <span class="live-sep">·</span>
-    <span class="live-zh">实时追踪</span>
+    <span style="color:var(--dim);margin:0 4px">·</span>
+    <span style="font-family:var(--zh);font-size:10px;color:var(--sub)">实时追踪</span>
   </div>
-
-  <div class="main-title">纵穿胡线</div>
+  <div class="main-title">纵穿胡焕庸线</div>
   <div class="main-en">Riding the Line that Makes China China</div>
-
   <div class="route-row">
     <span class="route-chip">腾冲 Tengchong → 黑河 Heihe</span>
     <span class="route-dot"></span>
@@ -569,154 +114,79 @@
   </div>
 </div>
 
-<!-- ═══ STATS ═══════════════════════════════════════════════════ -->
-
 <div class="stats">
-
   <div class="stat red" id="c-dist">
-    <div class="stat-head">
-      <span class="stat-label-zh">已骑里程</span>
-      <span class="stat-label-en">Distance Ridden</span>
-    </div>
+    <div class="stat-head"><span class="stat-label-zh">已骑里程</span><span class="stat-label-en">Distance Ridden</span></div>
     <div class="stat-number"><span id="v-dist">0</span><span class="stat-unit">km</span></div>
-    <div class="stat-foot">
-      <span class="stat-of">of 5,700 km</span>
-      <span class="stat-pct" id="p-dist">0%</span>
-    </div>
+    <div class="stat-foot"><span class="stat-of">of 5,700 km</span><span class="stat-pct" id="p-dist">0%</span></div>
   </div>
-
   <div class="stat amber" id="c-elev">
-    <div class="stat-head">
-      <span class="stat-label-zh">累计爬升</span>
-      <span class="stat-label-en">Elevation Gained</span>
-    </div>
+    <div class="stat-head"><span class="stat-label-zh">累计爬升</span><span class="stat-label-en">Elevation Gained</span></div>
     <div class="stat-number"><span id="v-elev">0</span><span class="stat-unit">m</span></div>
-    <div class="stat-foot">
-      <span class="stat-of">of 45,000 m</span>
-      <span class="stat-pct" id="p-elev">0%</span>
-    </div>
+    <div class="stat-foot"><span class="stat-of">of 45,000 m</span><span class="stat-pct" id="p-elev">0%</span></div>
   </div>
-
   <div class="stat blue" id="c-days">
-    <div class="stat-head">
-      <span class="stat-label-zh">骑行天数</span>
-      <span class="stat-label-en">Days on Road</span>
-    </div>
+    <div class="stat-head"><span class="stat-label-zh">骑行天数</span><span class="stat-label-en">Days on Road</span></div>
     <div class="stat-number"><span id="v-days">0</span><span class="stat-unit">days</span></div>
-    <div class="stat-foot">
-      <span class="stat-of">of ~70 days</span>
-      <span class="stat-pct" id="p-days">0%</span>
-    </div>
+    <div class="stat-foot"><span class="stat-of">of ~70 days</span><span class="stat-pct" id="p-days">0%</span></div>
   </div>
-
   <div class="stat green" id="c-avg">
-    <div class="stat-head">
-      <span class="stat-label-zh">日均 / 天</span>
-      <span class="stat-label-en">Avg per Day</span>
-    </div>
+    <div class="stat-head"><span class="stat-label-zh">日均 / 天</span><span class="stat-label-en">Avg per Day</span></div>
     <div class="stat-number"><span id="v-avg">—</span><span class="stat-unit" id="u-avg"></span></div>
-    <div class="stat-foot">
-      <span class="stat-of" id="of-avg">target 82 km/d</span>
-      <span class="stat-pct" id="p-avg"></span>
-    </div>
+    <div class="stat-foot"><span class="stat-of" id="of-avg">target 82 km/d</span><span class="stat-pct" id="p-avg"></span></div>
   </div>
-
 </div>
 
-<!-- ═══ DUAL PROGRESS BARS ══════════════════════════════════════ -->
-
-<div class="progress-bars">
+<div class="pbars">
   <div class="pbar-row">
-    <div class="pbar-label">
-      <span class="pbar-zh">里程</span>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-left:4px">DIST</span>
-    </div>
+    <div style="display:flex;align-items:baseline"><span class="pbar-zh">里程</span><span class="pbar-en">DIST</span></div>
     <div class="pbar-track"><div class="pbar-fill red" id="bar-dist"></div></div>
     <div class="pbar-pct red" id="bpct-dist">0.0%</div>
   </div>
   <div class="pbar-row">
-    <div class="pbar-label">
-      <span class="pbar-zh">爬升</span>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-left:4px">ELEV</span>
-    </div>
+    <div style="display:flex;align-items:baseline"><span class="pbar-zh">爬升</span><span class="pbar-en">ELEV</span></div>
     <div class="pbar-track"><div class="pbar-fill amber" id="bar-elev"></div></div>
     <div class="pbar-pct amber" id="bpct-elev">0.0%</div>
   </div>
 </div>
 
-<!-- ═══ STATUS BAR ═══════════════════════════════════════════════ -->
-
-<div class="status-bar">
-  <span class="status-icon"></span>
-  <span class="status-text">
-    <span class="status-zh">最近更新 · </span>
-    <span id="last-update">—</span>
-  </span>
-  <span class="upload-toggle" onclick="document.getElementById('upbox').classList.toggle('show')">↑ GPX</span>
+<div class="sbar">
+  <span class="sbar-dot"></span>
+  <span class="sbar-text"><span class="sbar-zh">最近更新 · </span><span id="last-update">—</span></span>
+  <span class="upload-btn" onclick="document.getElementById('upbox').classList.toggle('show')">↑ GPX</span>
 </div>
-
 <div class="upload-box" id="upbox">
-  <strong style="color:#fff">Upload GPX from phone · <span class="zh">手机上传</span></strong><br>
-  GitHub App → <code>gpx/</code> folder → tap <code>+</code> → Upload file<span class="zh"> · 点击加号上传文件</span><br>
-  Filename: <code>YYYY-MM-DD_location.gpx</code> &nbsp;e.g. <code>2025-04-23_baoshan.gpx</code><br>
-  GitHub Actions auto-processes within ~60 seconds · <span class="zh">约 60 秒后地图自动更新</span>
+  <strong style="color:#fff">Upload GPX · <span class="zh">手机上传</span></strong><br>
+  GitHub App → <code>gpx/</code> → tap <code>+</code> → Upload file<span class="zh"> · 点击加号上传</span><br>
+  Filename: <code>YYYY-MM-DD_location.gpx</code><br>
+  Auto-updates in ~60s · <span class="zh">约60秒后自动更新</span>
 </div>
-
-<!-- ═══ MAP ══════════════════════════════════════════════════════ -->
 
 <div class="map-wrap">
   <div id="map"></div>
-  <div class="map-legend">
-    <div class="leg-item">
-      <div class="leg-line dashed"></div>
-      <span class="leg-text">HU LINE</span><span class="leg-zh">胡焕庸线</span>
-    </div>
-    <div class="leg-item">
-      <div class="leg-line green"></div>
-      <span class="leg-text">RIDDEN</span><span class="leg-zh">已骑</span>
-    </div>
-    <div class="leg-item">
-      <div class="leg-dot green"></div>
-      <span class="leg-text">START</span><span class="leg-zh">腾冲</span>
-    </div>
-    <div class="leg-item">
-      <div class="leg-dot blue"></div>
-      <span class="leg-text">GOAL</span><span class="leg-zh">黑河</span>
-    </div>
-    <div class="leg-item">
-      <div class="leg-dot amber"></div>
-      <span class="leg-text">POSITION</span><span class="leg-zh">当前</span>
-    </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-line dashed"></div><span class="leg-text">HU LINE</span><span class="leg-zh">胡焕庸线</span></div>
+    <div class="leg-item"><div class="leg-line green"></div><span class="leg-text">RIDDEN</span><span class="leg-zh">已骑</span></div>
+    <div class="leg-item"><div class="leg-dot green"></div><span class="leg-text">START</span><span class="leg-zh">腾冲</span></div>
+    <div class="leg-item"><div class="leg-dot blue"></div><span class="leg-text">GOAL</span><span class="leg-zh">黑河</span></div>
+    <div class="leg-item"><div class="leg-dot amber"></div><span class="leg-text">NOW</span><span class="leg-zh">当前</span></div>
   </div>
 </div>
 
-<!-- ═══ FOOTER ═══════════════════════════════════════════════════ -->
-
 <footer class="footer">
-  <span class="footer-left">Map © OpenStreetMap · © CARTO</span>
-  <span class="footer-right" id="f-start">Started: —</span>
+  <span>Map © OpenStreetMap contributors</span>
+  <span id="f-start">Started: —</span>
 </footer>
 
-<!-- ═══ SCRIPT ═══════════════════════════════════════════════════ -->
-
 <script>
-const T_DIST = 5700, T_ELEV = 45000, T_DAYS = 70, TGT = 82;
-const TENGCHONG = [24.9905, 98.4773];
-const HEIHE     = [50.2458, 127.4831];
+var T_DIST=5700,T_ELEV=45000,T_DAYS=70,TGT=82;
+var TENGCHONG=[24.9905,98.4773];
+var HEIHE=[50.2458,127.4831];
 
-/* ── MAP ─────────────────────────────────────────── */
-const map = L.map('map', { center:[37,108], zoom:4, zoomControl:true, attributionControl:false });
+var map=L.map('map',{center:[37,108],zoom:4});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom:19
-}).addTo(map);
-
-L.control.attribution({ prefix: false })
-  .addAttribution('© OpenStreetMap · © CARTO')
-  .addTo(map);
-
-/* ── HU LINE ─────────────────────────────────────── */
-const huCoords = [
+var huCoords=[
   [24.9905,98.4773],[25.12,98.62],[25.35,98.85],[25.6,99.1],[25.5,99.6],[25.6,99.9],[25.7,100.2],
   [26.1,100.3],[26.6,100.4],[27.0,100.6],[27.5,100.7],[26.8,101.5],[26.6,101.7],[26.9,101.9],
   [27.5,102.0],[28.0,102.4],[28.5,102.8],[29.0,103.6],[29.5,104.0],[30.0,103.8],[30.5,103.9],
@@ -726,145 +196,84 @@ const huCoords = [
   [44.8,114.5],[45.8,115.5],[46.5,116.8],[47.2,118.2],[47.8,120.0],[48.5,121.5],[49.2,123.5],
   [49.8,125.5],[50.1,126.8],[50.2458,127.4831]
 ];
+L.polyline(huCoords,{color:'rgba(255,255,255,0.25)',weight:1.5,dashArray:'8 8'}).addTo(map);
 
-L.polyline(huCoords, {
-  color: 'rgba(255,255,255,0.18)',
-  weight: 1.5,
-  dashArray: '8 8'
-}).addTo(map);
-
-/* ── CITY MARKERS ────────────────────────────────── */
-function cityMarker(zh, en, dotColor) {
-  return L.divIcon({
-    html: `<div class="cmark">
-      <div class="cmark-dot" style="background:${dotColor}"></div>
-      <span class="cmark-zh">${zh}</span>
-      <span class="cmark-en">${en}</span>
-    </div>`,
-    iconAnchor: [0, 10],
-    className: ''
-  });
+function cityIcon(zh,en,col){
+  return L.divIcon({html:'<div class="cmark"><div class="cmark-dot" style="background:'+col+'"></div><span class="cmark-zh">'+zh+'</span><span class="cmark-en">'+en+'</span></div>',iconAnchor:[0,10],className:''});
 }
+L.marker(TENGCHONG,{icon:cityIcon('腾冲','Tengchong','#22c55e')}).addTo(map)
+  .bindPopup('<div class="pop-tag">Start · 出发点</div><div><span class="pop-zh">腾冲</span><span class="pop-en">Tengchong</span></div>');
+L.marker(HEIHE,{icon:cityIcon('黑河','Heihe','#3b82f6')}).addTo(map)
+  .bindPopup('<div class="pop-tag">Goal · 终点</div><div><span class="pop-zh">黑河</span><span class="pop-en">Heihe</span></div>');
 
-L.marker(TENGCHONG, { icon: cityMarker('腾冲','Tengchong','#22c55e') })
-  .addTo(map)
-  .bindPopup(`<div class="pop-tag">Start · 出发点</div>
-    <div class="pop-name"><span class="zh">腾冲</span><span class="en">Tengchong</span></div>
-    <div class="pop-stats"><span>98.48°E &nbsp; 24.99°N</span></div>`);
+var posIcon=L.divIcon({html:'<div style="position:relative;width:14px;height:14px"><div style="position:absolute;inset:0;border-radius:50%;background:rgba(245,158,11,.2);animation:rip 2s ease-out infinite"></div><div style="position:absolute;inset:3px;border-radius:50%;background:#f59e0b;border:2px solid #0a0c10"></div></div><style>@keyframes rip{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.5);opacity:0}}</style>',iconSize:[14,14],iconAnchor:[7,7],className:''});
 
-L.marker(HEIHE, { icon: cityMarker('黑河','Heihe','#3b82f6') })
-  .addTo(map)
-  .bindPopup(`<div class="pop-tag">Goal · 终点</div>
-    <div class="pop-name"><span class="zh">黑河</span><span class="en">Heihe</span></div>
-    <div class="pop-stats"><span>127.48°E &nbsp; 50.25°N</span></div>`);
+var dayIcon=L.divIcon({html:’<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6)"></div>’,iconSize:[6,6],iconAnchor:[3,3],className:’’});
 
-/* ── ICONS ───────────────────────────────────────── */
-const posIcon = L.divIcon({
-  html: `<div style="position:relative;width:14px;height:14px">
-    <div style="position:absolute;inset:0;border-radius:50%;background:rgba(245,158,11,.2);animation:rip 2s ease-out infinite"></div>
-    <div style="position:absolute;inset:3px;border-radius:50%;background:#f59e0b;border:2px solid #0a0c10"></div>
-  </div>
-  <style>@keyframes rip{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.5);opacity:0}}</style>`,
+var rLayers=[],wMarkers=[],posMarker=null;
 
-iconSize:[14,14], iconAnchor:[7,7], className:’’
-});
+function pct(v,t){return Math.min(100,(v/t)*100);}
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+‘k’:String(Math.round(n));}
 
-const dayIcon = L.divIcon({
-html: `<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5)"></div>`,
-iconSize:[6,6], iconAnchor:[3,3], className:’’
-});
-
-/* ── LOAD DATA ───────────────────────────────────── */
-let rLayers=[], wMarkers=[], posMarker=null;
-
-function pct(v,t){ return Math.min(100,(v/t)*100); }
-function fmt(n){ return n>=1000 ? (n/1000).toFixed(1)+‘k’ : String(Math.round(n)); }
-
-async function loadData() {
-try {
-const r = await fetch(‘ride_data.json?v=’ + Date.now());
-if (!r.ok) return;
-const d = await r.json();
+function loadData(){
+fetch(‘ride_data.json?v=’+Date.now())
+.then(function(r){return r.json();})
+.then(function(d){
+var dist=d.totalDistance||0;
+var elev=d.totalElevation||0;
+var days=d.totalDays||0;
+var dp=pct(dist,T_DIST),ep=pct(elev,T_ELEV),dayp=pct(days,T_DAYS);
 
 ```
-const dist = d.totalDistance  || 0;
-const elev = d.totalElevation || 0;
-const days = d.totalDays      || 0;
+  document.getElementById('v-dist').textContent=fmt(dist);
+  document.getElementById('v-elev').textContent=fmt(elev);
+  document.getElementById('v-days').textContent=days;
+  document.getElementById('p-dist').textContent=dp.toFixed(1)+'%';
+  document.getElementById('p-elev').textContent=ep.toFixed(1)+'%';
+  document.getElementById('p-days').textContent=dayp.toFixed(0)+'%';
+  document.getElementById('c-dist').style.setProperty('--p',dp.toFixed(1)+'%');
+  document.getElementById('c-elev').style.setProperty('--p',ep.toFixed(1)+'%');
+  document.getElementById('c-days').style.setProperty('--p',dayp.toFixed(1)+'%');
+  document.getElementById('bar-dist').style.width=dp.toFixed(1)+'%';
+  document.getElementById('bar-elev').style.width=ep.toFixed(1)+'%';
+  document.getElementById('bpct-dist').textContent=dp.toFixed(1)+'%';
+  document.getElementById('bpct-elev').textContent=ep.toFixed(1)+'%';
 
-/* Stats */
-const dp = pct(dist, T_DIST), ep = pct(elev, T_ELEV), dayp = pct(days, T_DAYS);
-
-document.getElementById('v-dist').textContent = fmt(dist);
-document.getElementById('v-elev').textContent = fmt(elev);
-document.getElementById('v-days').textContent = days;
-document.getElementById('p-dist').textContent = dp.toFixed(1) + '%';
-document.getElementById('p-elev').textContent = ep.toFixed(1) + '%';
-document.getElementById('p-days').textContent = dayp.toFixed(0) + '%';
-
-document.getElementById('c-dist').style.setProperty('--p', dp.toFixed(1)+'%');
-document.getElementById('c-elev').style.setProperty('--p', ep.toFixed(1)+'%');
-document.getElementById('c-days').style.setProperty('--p', dayp.toFixed(1)+'%');
-
-/* Progress bars */
-document.getElementById('bar-dist').style.width  = dp.toFixed(1) + '%';
-document.getElementById('bar-elev').style.width  = ep.toFixed(1) + '%';
-document.getElementById('bpct-dist').textContent = dp.toFixed(1) + '%';
-document.getElementById('bpct-elev').textContent = ep.toFixed(1) + '%';
-
-/* Averages */
-if (days > 0) {
-  const avgD = dist / days, avgE = elev / days;
-  const avgP = pct(avgD, TGT);
-  document.getElementById('v-avg').textContent = avgD.toFixed(0);
-  document.getElementById('u-avg').textContent = 'km/d';
-  document.getElementById('of-avg').textContent = avgE.toFixed(0) + ' m/d avg elev';
-  document.getElementById('p-avg').textContent  = avgP.toFixed(0) + '%';
-  document.getElementById('c-avg').style.setProperty('--p', Math.min(100,avgP).toFixed(1)+'%');
-}
-
-/* Timestamps */
-if (d.lastUpdate) document.getElementById('last-update').textContent = d.lastUpdate;
-if (d.tracks && d.tracks[0]?.date)
-  document.getElementById('f-start').textContent = 'Started: ' + d.tracks[0].date;
-
-/* Map layers */
-rLayers.forEach(l => map.removeLayer(l)); rLayers = [];
-wMarkers.forEach(m => map.removeLayer(m)); wMarkers = [];
-if (posMarker) map.removeLayer(posMarker);
-
-if (d.tracks && d.tracks.length) {
-  d.tracks.forEach((t, i) => {
-    if (!t.coords?.length) return;
-
-    L.polyline(t.coords, { color:'#22c55e', weight:3, opacity:.9 })
-      .addTo(map);
-    rLayers.push();
-
-    const last = t.coords[t.coords.length - 1];
-    const w = L.marker(last, { icon: dayIcon })
-      .addTo(map)
-      .bindPopup(`<div class="pop-tag">${t.date || 'Day '+(i+1)}</div>
-        <div class="pop-name"><span class="zh">${t.name||''}</span></div>
-        <div class="pop-stats">
-          ${t.distance ? '<b>'+t.distance.toFixed(0)+' km</b>' : ''}
-          ${t.elevation ? '<b>↑'+t.elevation.toFixed(0)+' m</b>' : ''}
-        </div>`);
-    wMarkers.push(w);
-  });
-
-  const lt = d.tracks[d.tracks.length - 1];
-  if (lt?.coords?.length) {
-    posMarker = L.marker(lt.coords[lt.coords.length-1], { icon:posIcon, zIndexOffset:1000 })
-      .addTo(map)
-      .bindPopup(`<div class="pop-tag">Current Position · 当前位置</div>
-        <div class="pop-name"><span class="en">${lt.date||''}</span></div>`);
+  if(days>0){
+    var avgD=dist/days,avgE=elev/days,avgP=pct(avgD,TGT);
+    document.getElementById('v-avg').textContent=avgD.toFixed(0);
+    document.getElementById('u-avg').textContent='km/d';
+    document.getElementById('of-avg').textContent=avgE.toFixed(0)+' m/d avg elev';
+    document.getElementById('p-avg').textContent=avgP.toFixed(0)+'%';
+    document.getElementById('c-avg').style.setProperty('--p',Math.min(100,avgP).toFixed(1)+'%');
   }
-}
+  if(d.lastUpdate) document.getElementById('last-update').textContent=d.lastUpdate;
+  if(d.tracks&&d.tracks[0]&&d.tracks[0].date) document.getElementById('f-start').textContent='Started: '+d.tracks[0].date;
+
+  rLayers.forEach(function(l){map.removeLayer(l);}); rLayers=[];
+  wMarkers.forEach(function(m){map.removeLayer(m);}); wMarkers=[];
+  if(posMarker) map.removeLayer(posMarker);
+
+  if(d.tracks&&d.tracks.length){
+    d.tracks.forEach(function(t,i){
+      if(!t.coords||!t.coords.length) return;
+      var pl=L.polyline(t.coords,{color:'#22c55e',weight:3,opacity:.9}).addTo(map);
+      rLayers.push(pl);
+      var last=t.coords[t.coords.length-1];
+      var w=L.marker(last,{icon:dayIcon}).addTo(map)
+        .bindPopup('<div class="pop-tag">'+(t.date||'Day '+(i+1))+'</div><div class="pop-zh">'+(t.name||'')+'</div><div class="pop-stats">'+(t.distance?'<b>'+t.distance.toFixed(0)+' km</b>':'')+(t.elevation?'<b>↑'+t.elevation.toFixed(0)+' m</b>':'')+'</div>');
+      wMarkers.push(w);
+    });
+    var lt=d.tracks[d.tracks.length-1];
+    if(lt&&lt.coords&&lt.coords.length){
+      posMarker=L.marker(lt.coords[lt.coords.length-1],{icon:posIcon,zIndexOffset:1000}).addTo(map)
+        .bindPopup('<div class="pop-tag">Current Position · 当前位置</div><div>'+(lt.date||'')+'</div>');
+    }
+  }
+})
+.catch(function(e){console.log('No ride data:',e.message);});
 ```
 
-} catch(e) {
-console.log(‘ride_data.json not loaded:’, e.message);
-}
 }
 
 loadData();
